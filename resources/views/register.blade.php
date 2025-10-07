@@ -47,7 +47,7 @@
                 </div>
                 <div class="form-group mb-2">
                     <label class="sr-only">Phone</label>
-                    <input type="text" name="phone" class="form-control" placeholder="Phone (e.g. (723) 123 4567)" required>
+                    <input type="text" name="phone" class="form-control" id="formphone" placeholder="Phone" required>
                 </div>
                 <div class="form-group mb-2">
                     <label class="sr-only">Email</label>
@@ -76,83 +76,97 @@
     <script src="{{ asset('bootstrap-4.6.2-dist/js/sweetalert2/sweetalert2.min.js') }}"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.querySelector('.form-signin');
-            const password = document.getElementById('inputPassword');
-            const confirmPassword = document.getElementById('inputConfirmPassword');
+        $(document).ready(function() {
+            $('#formphone').on('input', function() {
+                let input = $(this).val();
 
-            form.addEventListener('submit', function (e) {
-                e.preventDefault(); 
+                input = input.replace(/\D/g, '');
 
-                if (password.value !== confirmPassword.value) {
+                if (input.length > 3 && input.length <= 6) {
+                    input = '(' + input.substring(0, 3) + ') ' + input.substring(3);
+                } else if (input.length > 6) {
+                    input = '(' + input.substring(0, 3) + ') ' + input.substring(3, 6) + ' ' + input.substring(6, 10);
+                }
+
+                $(this).val(input);
+            });
+        });
+        $(document).ready(function() {
+            $('#registerForm').submit(function(e) {
+                e.preventDefault();
+
+                let password = $('#password').val();
+                let confirmPassword = $('#password_confirmation').val();
+
+                // Check if passwords match
+                if (password !== confirmPassword) {
                     Swal.fire({
-                        icon: 'error',
+                        icon: 'warning',
                         title: 'Password Mismatch',
-                        text: 'Your password and confirm password must be the same.',
-                        confirmButtonColor: '#6c757d',
+                        text: 'Your password and confirm password must match.',
+                        confirmButtonColor: '#6c757d'
                     });
                     return;
                 }
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Thank you for registering!',
-                    text: 'Click continue to proceed to your dashboard.',
-                    confirmButtonText: 'Continue',
-                    confirmButtonColor: '#6c757d',
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '/dashboard'; 
+                // Send data via AJAX to Laravel backend
+                $.ajax({
+                    url: "{{ route('postRegister') }}",
+                    type: "POST",
+                    data: $(this).serialize(),
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Success SweetAlert
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thank you for registering!',
+                                text: 'Click "Continue" to proceed to your dashboard.',
+                                confirmButtonText: 'Continue',
+                                confirmButtonColor: '#6c757d'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Simulate login loading
+                                    Swal.fire({
+                                        title: 'Logging you in...',
+                                        text: 'Please wait a moment.',
+                                        icon: 'info',
+                                        showConfirmButton: false,
+                                        allowOutsideClick: false,
+                                        timer: 2000,
+                                        didOpen: () => Swal.showLoading()
+                                    });
+
+                                    // Redirect after short delay
+                                    setTimeout(() => {
+                                        window.location.href = response.redirect;
+                                    }, 2000);
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Registration Failed',
+                                text: response.message || 'An unexpected error occurred.',
+                                confirmButtonColor: '#6c757d'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        let message = 'An error occurred. Please check your input.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Registration Error',
+                            text: message,
+                            confirmButtonColor: '#6c757d'
+                        });
                     }
                 });
-            });
-        });
-
-        // Register form
-        $('#registerForm').submit(function(e) {
-            e.preventDefault();
-
-            let password = $('#password').val();
-            let confirmPassword = $('#password_confirmation').val();
-
-            // Front-end password match check
-            if (password !== confirmPassword) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Password Mismatch',
-                    text: 'Your password and confirm password must match.',
-                    confirmButtonColor: '#6c757d'
-                });
-                return;
-            }
-
-            // Success SweetAlert (confirmation)
-            Swal.fire({
-                icon: 'success',
-                title: 'Thank you for registering!',
-                text: 'Click "Continue" to automatically log in.',
-                confirmButtonText: 'Continue',
-                confirmButtonColor: '#6c757d'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Show auto login simulation
-                    Swal.fire({
-                        title: 'Logging you in...',
-                        text: 'Please wait a moment.',
-                        icon: 'info',
-                        showConfirmButton: false,
-                        allowOutsideClick: false,
-                        timer: 2000,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Simulate auto-login redirect (after short delay)
-                    setTimeout(() => {
-                        window.location.href = '/dashboard'; // change to your dashboard route
-                    }, 2000);
-                }
             });
         });
 

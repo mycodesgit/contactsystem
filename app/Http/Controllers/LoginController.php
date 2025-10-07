@@ -29,10 +29,9 @@ class LoginController extends Controller
             'password' => $request->password,
         ]);
 
-        if (Auth::guard('web')->attempt($validatedUser)) {
-            return redirect()->route('index.contact');
-        }
-        else {
+        if ($validatedUser) {
+            return redirect()->route('index.contact')->with('success', 'You have successfully logged in.');
+        } else {
             return redirect()->back()->with('error', 'Invalid Credentials');
         }
     }
@@ -58,6 +57,8 @@ class LoginController extends Controller
             'phone' => $request->phone,
             'email' => $request->email,
             'password' => bcrypt($request->password), 
+            'remember_token' => Str::random(64),
+            'role' => 0, 
         ]);
 
         auth()->guard('web')->login($user);
@@ -67,6 +68,6 @@ class LoginController extends Controller
             'message' => 'Thank you for registering!',
             'redirect' => route('index.contact')
         ]);
-}
+    }
 
 }

@@ -29,12 +29,9 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                {{-- <li class="nav-item active">
-                    <a class="nav-link" href="{{ route('index.contact') }}">Contact List</a>
+                <li class="nav-item active">
+                    <a class="nav-link" href="">{{ Auth::guard('web')->user()->name }}</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('store.contact') }}">Add Contact</a>
-                </li> --}}
             </ul>
             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                 @csrf

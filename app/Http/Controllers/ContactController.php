@@ -36,12 +36,18 @@ class ContactController extends Controller
     {
         $search = $request->get('search', '');
 
+        $userId = auth()->user()->id;
+
         $contacts = Contacts::join('users', 'contacts.postedBy', '=', 'users.id')
-            ->where('contacts.contact_name', 'like', "%{$search}%")
-            ->orWhere('contacts.contact_company', 'like', "%{$search}%")
-            ->orWhere('contacts.contact_phone', 'like', "%{$search}%")
-            ->orWhere('contacts.email', 'like', "%{$search}%")
+            ->where('contacts.postedBy', $userId)
+            ->where(function ($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', "%{$search}%")
+                    ->orWhere('contacts.contact_company', 'like', "%{$search}%")
+                    ->orWhere('contacts.contact_phone', 'like', "%{$search}%")
+                    ->orWhere('contacts.email', 'like', "%{$search}%");
+            })
             ->orderBy('contacts.id', 'asc')
+            ->select('contacts.*', 'users.name as posted_by_name')
             ->paginate(5);
 
         return response()->json($contacts);
