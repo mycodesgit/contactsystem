@@ -125,7 +125,6 @@
                                 confirmButtonColor: '#6c757d'
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    // Simulate login loading
                                     Swal.fire({
                                         title: 'Logging you in...',
                                         text: 'Please wait a moment.',
