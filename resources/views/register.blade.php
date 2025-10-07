@@ -98,7 +98,6 @@
                 let password = $('#password').val();
                 let confirmPassword = $('#password_confirmation').val();
 
-                // Check if passwords match
                 if (password !== confirmPassword) {
                     Swal.fire({
                         icon: 'warning',
@@ -109,7 +108,6 @@
                     return;
                 }
 
-                // Send data via AJAX to Laravel backend
                 $.ajax({
                     url: "{{ route('postRegister') }}",
                     type: "POST",
@@ -119,7 +117,6 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Success SweetAlert
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Thank you for registering!',
@@ -139,7 +136,6 @@
                                         didOpen: () => Swal.showLoading()
                                     });
 
-                                    // Redirect after short delay
                                     setTimeout(() => {
                                         window.location.href = response.redirect;
                                     }, 2000);
