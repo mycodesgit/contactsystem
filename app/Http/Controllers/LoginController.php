@@ -51,6 +51,13 @@ class LoginController extends Controller
             'password' => 'required|min:6',
         ]);
 
+        $email = $request->input('email'); 
+        $existingEmail = User::where('email', $email)->first();
+
+        if ($existingEmail) {
+            return response()->json(['error' => true, 'message' => 'Email already exists!']);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'company' => $request->company,
